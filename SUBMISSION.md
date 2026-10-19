@@ -5,7 +5,7 @@
 > **Candidate Name:** Siam Ahmed  
 > **Submission Date:** 19 October 2026  
 > **Submission Contact (WhatsApp):** 01945411140  
-> **Repository:** https://github.com/shohag04/SmartStock *(replace with your public repository link)*  
+> **Repository:** https://github.com/engsiam/smartStock.git 
 
 ---
 
@@ -161,5 +161,5 @@ I look forward to discussing the architecture and implementation with you.
 
 Best regards,
 Siam Ahmed
-Phone / WhatsApp: [YOUR_PHONE_NUMBER]
+Phone / WhatsApp:01742080475
 ```

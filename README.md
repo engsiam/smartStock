@@ -169,3 +169,5 @@ Detailed engineering documentation is located in the `docs/` directory:
 ## 8. License & Assessment Compliance
 
 This project was built for the **NT TECH INNOVATION Full Stack Developer Practical Assessment**. All business logic, database transactions, and frontend components were independently designed and verified against the assessment guidelines.
+#   s m a r t S t o c k  
+ 
