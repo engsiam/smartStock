@@ -29,7 +29,23 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsOptional()
+  DIRECT_URL?: string;
+
+  @IsString()
+  @IsOptional()
   DATABASE_URL_TEST?: string;
+
+  @IsString()
+  @IsOptional()
+  SUPABASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  SUPABASE_ANON_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  SUPABASE_SERVICE_ROLE_KEY?: string;
 
   @IsString()
   @IsOptional()

@@ -13,3 +13,4 @@ process.env.THROTTLE_LIMIT ??= '100000'; // effectively disabled for tests
 process.env.DATABASE_URL ??=
   process.env.DATABASE_URL_TEST ??
   'postgresql://smartstock:CHANGE_ME@localhost:5432/smartstock_test?schema=public';
+process.env.DIRECT_URL ??= process.env.DATABASE_URL;
