@@ -1,10 +1,20 @@
 # SmartStock — AI-Powered Inventory & POS Management System
 
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React 19](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![NestJS](https://img.shields.io/badge/NestJS_11-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![Fastify](https://img.shields.io/badge/Fastify_5-000000?style=for-the-badge&logo=fastify&logoColor=white)](https://fastify.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma_6-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Google Gemini](https://img.shields.io/badge/Gemini_2.5_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+
 > **Practical Assessment Submission:** NT TECH INNOVATION — Full Stack Developer  
 > **Candidate:** Siam Ahmed  
 > **Target Audience:** Retail & Wholesale SMEs in Bangladesh (Grocery, Supermarkets, FMCG Distributors)  
 > **Currency:** Bangladeshi Taka (BDT ৳) with poysha precision  
 > **Evaluation Date:** 19 October 2026  
+> **Repository:** https://github.com/engsiam/smartStock  
 
 ---
 
@@ -19,25 +29,26 @@ Traditional retail and wholesale grocery businesses in Bangladesh (*mudir dokan*
 - A high-speed **Point of Sale (POS)** terminal supporting Bangladeshi payment channels (**Cash, bKash, Nagad, Card, Credit**) and instant thermal receipt generation.
 - An **atomic inventory ledger** recording every stock movement with signed adjustments (`SALE`, `PURCHASE_RECEIVE`, `ADJUSTMENT_IN`, `ADJUSTMENT_OUT`, `SALE_RETURN`).
 - An **AI Reorder Advisor** combining deterministic 30-day velocity safety-stock formulas with **Google Gemini 2.5 Flash** for actionable natural language explanations in **Bangla (বাংলা)** and **English**, complete with **1-Click Purchase Order drafting**.
+- **Dynamic Database Architecture:** Full dual-connection pooling (`DATABASE_URL` + `DIRECT_URL`) supporting local PostgreSQL as well as **Supabase Cloud** deployment seamlessly via `.env`.
 
 ---
 
 ## 2. Technology Stack
 
 ### Frontend (`frontend/`)
-- **Core:** React 19 + TypeScript + Vite 6
+- **Core Framework:** React 19 + TypeScript + Vite 6
 - **Styling:** Tailwind CSS v4 (Glassmorphic dark design system)
 - **Routing:** React Router v7 (separate Public Landing and Authenticated Workspace layouts)
-- **Server State:** TanStack Query v5 (automatic query invalidation and caching)
+- **Server State:** TanStack Query v5 (automatic query invalidation, background refetching, and caching)
 - **Visual Analytics:** Recharts (Revenue trend area charts & category distribution bar charts)
 - **Icons:** Lucide React
 - **Testing:** Vitest + React Testing Library
 
 ### Backend (`backend/`)
 - **Runtime & Framework:** Node.js + NestJS 11 + Fastify 5 adapter (maximum throughput and low overhead)
-- **Database & ORM:** PostgreSQL 16 + Prisma ORM v6
-- **Authentication & Security:** Argon2id password hashing, JWT token rotation (`15m` access / `7d` refresh), `@fastify/helmet` security headers, and rate limiting (`@nestjs/throttler`)
-- **Validation:** `class-validator` + `class-transformer`
+- **Database & ORM:** PostgreSQL 16 + Prisma ORM v6 (with `directUrl` for Supabase pooler compatibility)
+- **Authentication & Security:** Argon2id password hashing, JWT token rotation (`7d` access / `30d` refresh), `@fastify/helmet` security headers, and rate limiting (`@nestjs/throttler`)
+- **Validation:** `class-validator` + `class-transformer` with strict whitelist enforcement
 - **Documentation:** Interactive OpenAPI / Swagger UI
 - **AI / ML Integration:** `@google/genai` (Gemini 2.5 Flash) with deterministic rule-based fallback and chronological backtesting evaluation script
 - **Testing:** Jest (Unit & Integration test suites)
@@ -46,7 +57,7 @@ Traditional retail and wholesale grocery businesses in Bangladesh (*mudir dokan*
 
 ## 3. Seeded Demo Accounts (1-Click Login Ready)
 
-The database comes pre-seeded with realistic Bangladeshi FMCG products (Ispahani Tea, Teer Soybean Oil, Miniket Rice, ACI Pure Salt) and 3 role-based demo accounts:
+The database comes pre-seeded with realistic Bangladeshi FMCG products (Ispahani Tea, Teer Soybean Oil, Miniket Rice, ACI Pure Salt, Pran Frooto) and 3 role-based demo accounts:
 
 | Persona | Name | Role | Email | Password | Scope & Permissions |
 | :--- | :--- | :---: | :--- | :--- | :--- |
@@ -62,7 +73,7 @@ The database comes pre-seeded with realistic Bangladeshi FMCG products (Ispahani
 
 ### Prerequisites
 - **Node.js:** v20.x or v22.x
-- **PostgreSQL:** v16.x running on `localhost:5432` with user `smartstock` (or configured in `backend/.env`)
+- **PostgreSQL:** v16.x running on `localhost:5432` with user `smartstock` (or configured via Supabase in `backend/.env`)
 
 ### Backend Setup
 ```bash
@@ -78,8 +89,8 @@ cp .env.example .env
 npx prisma migrate deploy
 npm run seed
 
-# 4. Start backend in development mode (Fastify on port 3000)
-npm run start:dev
+# 4. Start backend development server
+npm run dev
 ```
 - API Base URL: `http://localhost:3000/api`
 - Health Probe: `http://localhost:3000/health`
@@ -113,7 +124,7 @@ All approved test and build commands are fully operational:
 | **Frontend** | `npm run typecheck` | TypeScript typecheck (`tsc -b`) | **0 errors** |
 | **Frontend** | `npm run lint` | ESLint static analysis | **0 errors, 0 warnings** |
 | **Frontend** | `npm test` | Vitest unit test suite | **2/2 files passed (4 tests)** |
-| **Frontend** | `npm run build` | Production Vite bundle build | **Built in 7.24s** |
+| **Frontend** | `npm run build` | Production Vite bundle build | **Built in 8.31s** |
 
 ---
 
@@ -156,18 +167,17 @@ Baseline: Naive Persistence (Yesterday Demand)   | 4.47        | 5.60   | 6 days
 ## 7. Documentation Index
 
 Detailed engineering documentation is located in the `docs/` directory:
-- [PRD.md](file:///e:/siam%20files/SmartStock/docs/PRD.md): Product Requirements, Personas, and User Stories
-- [ARCHITECTURE.md](file:///e:/siam%20files/SmartStock/docs/ARCHITECTURE.md): System Architecture, Fastify vs Express, and Multi-Tenancy
-- [DATABASE.md](file:///e:/siam%20files/SmartStock/docs/DATABASE.md): Schema, Poysha Decimal Precision, and Weighted-Average Cost Model
-- [API.md](file:///e:/siam%20files/SmartStock/docs/API.md): Full REST API Specification & Error Contract
-- [SECURITY.md](file:///e:/siam%20files/SmartStock/docs/SECURITY.md): Authentication, RBAC, Helmet, CORS, and Secrets Policy
-- [TESTING.md](file:///e:/siam%20files/SmartStock/docs/TESTING.md): QA Testing Strategy, Unit & Integration Suites, and Backtesting Protocol
-- [DEMO-CHECKLIST.md](file:///e:/siam%20files/SmartStock/docs/DEMO-CHECKLIST.md): Step-by-Step Live Demonstration Walkthrough
+- [PRD.md](docs/PRD.md): Product Requirements, Personas, and User Stories
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md): System Architecture, Fastify vs Express, and Multi-Tenancy
+- [DATABASE.md](docs/DATABASE.md): Schema, Poysha Decimal Precision, and Weighted-Average Cost Model
+- [API.md](docs/API.md): Full REST API Specification & Error Contract
+- [SECURITY.md](docs/SECURITY.md): Authentication, RBAC, Helmet, CORS, and Secrets Policy
+- [TESTING.md](docs/TESTING.md): QA Testing Strategy, Unit & Integration Suites, and Backtesting Protocol
+- [DEMO-CHECKLIST.md](docs/DEMO-CHECKLIST.md): Step-by-Step Live Demonstration Walkthrough
+- [SUBMISSION.md](SUBMISSION.md): Candidate Submission Package & Executive Summary
 
 ---
 
 ## 8. License & Assessment Compliance
 
 This project was built for the **NT TECH INNOVATION Full Stack Developer Practical Assessment**. All business logic, database transactions, and frontend components were independently designed and verified against the assessment guidelines.
-#   s m a r t S t o c k  
- 
