@@ -36,19 +36,24 @@ interface Product {
 
 interface PurchaseOrder {
   id: string;
-  orderNumber: string;
+  orderNumber?: string;
+  number?: string;
   status: 'DRAFT' | 'RECEIVED' | 'CANCELLED';
-  totalAmount: number;
+  totalAmount?: number;
+  total?: number;
   expectedDate?: string;
   receivedDate?: string;
   createdAt: string;
-  supplier: { id: string; name: string };
-  items: Array<{
+  supplier?: { id: string; name: string };
+  items?: Array<{
     id: string;
-    product: { id: string; name: string; sku: string; unit: string };
-    quantity: number;
+    product?: { id: string; name: string; sku: string; unit: string };
+    nameSnapshot?: string;
+    quantity?: number;
+    qty?: number;
     unitCost: number;
-    totalCost: number;
+    totalCost?: number;
+    lineTotal?: number;
   }>;
 }
 
@@ -333,20 +338,27 @@ export const PurchasesPage: React.FC = () => {
                     orders.map((po) => (
                       <tr key={po.id} className="hover:bg-slate-900/50 transition-colors">
                         <td className="py-3 px-4 font-mono font-bold text-white">
-                          {po.orderNumber}
+                          {po.orderNumber || po.number}
                         </td>
                         <td className="py-3 px-4 text-slate-200 font-medium">
-                          {po.supplier?.name}
+                          {po.supplier?.name || 'General Supplier'}
                         </td>
                         <td className="py-3 px-4 text-slate-300">
                           {po.items?.length || 0} items
                           <span className="text-slate-500 block text-[10px] truncate max-w-xs">
-                            {po.items?.map((i) => `${i.product.name} (${i.quantity})`).join(', ')}
+                            {po.items
+                              ?.map(
+                                (i) =>
+                                  `${i.product?.name || i.nameSnapshot || 'Product'} (${
+                                    i.quantity ?? i.qty ?? 1
+                                  })`,
+                              )
+                              .join(', ')}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-slate-400">{formatDate(po.createdAt)}</td>
                         <td className="py-3 px-4 font-bold text-emerald-400">
-                          {formatBDT(po.totalAmount)}
+                          {formatBDT(po.totalAmount ?? po.total)}
                         </td>
                         <td className="py-3 px-4">
                           {po.status === 'RECEIVED' ? (
@@ -661,10 +673,10 @@ export const PurchasesPage: React.FC = () => {
 
             <div className="space-y-2 text-xs text-slate-300">
               <p>
-                Receiving PO <span className="font-mono font-bold text-white">{receivingOrder.orderNumber}</span> from <span className="font-bold text-white">{receivingOrder.supplier?.name}</span> will:
+                Receiving PO <span className="font-mono font-bold text-white">{receivingOrder.orderNumber || receivingOrder.number}</span> from <span className="font-bold text-white">{receivingOrder.supplier?.name || 'Supplier'}</span> will:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-slate-400">
-                <li>Atomically increment inventory quantity for all {receivingOrder.items.length} items.</li>
+                <li>Atomically increment inventory quantity for all {receivingOrder.items?.length || 0} items.</li>
                 <li>Recalculate moving weighted-average cost price.</li>
                 <li>Create an audit trail with type <code className="text-emerald-300">PURCHASE_RECEIVE</code>.</li>
               </ul>
@@ -694,7 +706,7 @@ export const PurchasesPage: React.FC = () => {
                 <input
                   type="number"
                   step="0.01"
-                  placeholder={receivingOrder.totalAmount.toString()}
+                  placeholder={(receivingOrder.totalAmount ?? receivingOrder.total ?? 0).toString()}
                   value={receiveAmountPaid}
                   onChange={(e) => setReceiveAmountPaid(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"

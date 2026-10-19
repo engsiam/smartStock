@@ -291,7 +291,9 @@ export class PurchasesService {
       this.prisma.purchase.findMany({
         where,
         include: {
-          items: true,
+          items: {
+            include: { product: true },
+          },
           supplier: true,
         },
         orderBy: { orderedAt: 'desc' },
@@ -315,7 +317,9 @@ export class PurchasesService {
     const purchase = await this.prisma.purchase.findFirst({
       where: { id, businessId },
       include: {
-        items: true,
+        items: {
+          include: { product: true },
+        },
         supplier: true,
         payments: true,
       },
@@ -328,19 +332,26 @@ export class PurchasesService {
     return this.formatPurchase(purchase);
   }
 
-   
   private formatPurchase(p: any) {
     return {
       ...p,
+      orderNumber: p.number,
+      totalAmount: Number(p.total),
       subtotal: Number(p.subtotal),
       discount: Number(p.discount),
       total: Number(p.total),
-       
       items: p.items?.map((item: any) => ({
         ...item,
+        quantity: Number(item.qty),
         qty: Number(item.qty),
         unitCost: Number(item.unitCost),
         lineTotal: Number(item.lineTotal),
+        product: item.product || {
+          id: item.productId,
+          name: item.nameSnapshot || 'Product',
+          sku: '',
+          unit: 'pcs',
+        },
       })),
     };
   }
