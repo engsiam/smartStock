@@ -199,7 +199,12 @@ export const PurchasesPage: React.FC = () => {
     createPoMutation.mutate({
       supplierId: selectedSupplierId,
       expectedDate: expectedDate || undefined,
-      items: poItems,
+      items: poItems.map((item) => ({
+        productId: item.productId,
+        qty: item.quantity,
+        quantity: item.quantity,
+        unitCost: item.unitCost,
+      })),
     });
   };
 
@@ -609,6 +614,12 @@ export const PurchasesPage: React.FC = () => {
                   )}
                 </span>
               </div>
+
+              {createPoMutation.isError && (
+                <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-400">
+                  {(createPoMutation.error as any)?.message || 'Failed to issue purchase order. Please check inputs.'}
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
                 <button

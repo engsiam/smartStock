@@ -44,11 +44,19 @@ export class CreatePurchaseItemDto {
   @IsNotEmpty()
   productId!: string;
 
-  @ApiProperty({ example: 20 })
+  @ApiProperty({ example: 20, required: false })
   @Type(() => Number)
   @IsNumber()
   @Min(0.001)
-  qty!: number;
+  @IsOptional()
+  qty?: number;
+
+  @ApiProperty({ example: 20, required: false })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0.001)
+  @IsOptional()
+  quantity?: number;
 
   @ApiProperty({ example: 210.0 })
   @Type(() => Number)
@@ -80,6 +88,16 @@ export class CreatePurchaseDto {
   @IsString()
   @IsOptional()
   note?: string;
+
+  @ApiProperty({ example: 'Urgent restocking order', required: false })
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
+  @ApiProperty({ example: '2026-10-25', required: false })
+  @IsString()
+  @IsOptional()
+  expectedDate?: string;
 
   @ApiProperty({ example: 'po-txn-uuid', required: false })
   @IsString()

@@ -162,17 +162,17 @@ export const InventoryPage: React.FC = () => {
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createProductMutation.mutate({
-      name: newProduct.name,
-      sku: newProduct.sku,
-      barcode: newProduct.barcode || undefined,
-      categoryId: newProduct.categoryId || undefined,
-      unit: newProduct.unit,
+      name: newProduct.name.trim(),
+      sku: newProduct.sku.trim(),
+      barcode: newProduct.barcode?.trim() || undefined,
+      categoryId: newProduct.categoryId && newProduct.categoryId.trim() !== '' ? newProduct.categoryId : undefined,
+      unit: newProduct.unit.trim() || 'pcs',
       costPrice: parseFloat(newProduct.costPrice) || 0,
       sellingPrice: parseFloat(newProduct.sellingPrice) || 0,
       stockQty: parseInt(newProduct.stockQty, 10) || 0,
       reorderLevel: parseInt(newProduct.reorderLevel, 10) || 10,
       leadTimeDays: parseInt(newProduct.leadTimeDays, 10) || 3,
-      location: newProduct.location || undefined,
+      location: newProduct.location?.trim() || undefined,
     });
   };
 
@@ -521,6 +521,12 @@ export const InventoryPage: React.FC = () => {
                 </div>
               </div>
 
+              {createProductMutation.isError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-400">
+                  {(createProductMutation.error as any)?.message || 'Failed to create product. Please check your inputs.'}
+                </div>
+              )}
+
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
                 <button
                   type="button"
@@ -646,6 +652,12 @@ export const InventoryPage: React.FC = () => {
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
+
+              {adjustStockMutation.isError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-400">
+                  {(adjustStockMutation.error as any)?.message || 'Failed to adjust stock. Please try again.'}
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
                 <button

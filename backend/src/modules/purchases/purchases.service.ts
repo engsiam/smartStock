@@ -116,13 +116,14 @@ export class PurchasesService {
 
       for (const item of dto.items) {
         const product = productMap.get(item.productId)!;
-        const lineTotal = item.qty * item.unitCost;
+        const itemQty = item.qty ?? item.quantity ?? 1;
+        const lineTotal = itemQty * item.unitCost;
         subtotal += lineTotal;
 
         itemsData.push({
           productId: product.id,
           nameSnapshot: product.name,
-          qty: new Prisma.Decimal(item.qty),
+          qty: new Prisma.Decimal(itemQty),
           unitCost: new Prisma.Decimal(item.unitCost),
           lineTotal: new Prisma.Decimal(lineTotal),
         });
@@ -130,6 +131,7 @@ export class PurchasesService {
 
       const discount = dto.discount ? Number(dto.discount) : 0;
       const total = Math.max(0, subtotal - discount);
+      const note = dto.note || dto.notes || null;
 
       // 5. Create Purchase in DRAFT status (no stock changes on draft creation)
       const purchase = await tx.purchase.create({
@@ -141,7 +143,7 @@ export class PurchasesService {
           subtotal: new Prisma.Decimal(subtotal),
           discount: new Prisma.Decimal(discount),
           total: new Prisma.Decimal(total),
-          note: dto.note || null,
+          note,
           createdById: userId,
           idempotencyKey: dto.idempotencyKey || null,
           items: {

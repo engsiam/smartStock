@@ -49,9 +49,10 @@ export class SalesService {
       for (const item of dto.items) {
         const product = productMap.get(item.productId)!;
         const available = Number(product.stockQty);
-        if (available < item.qty) {
+        const itemQty = item.qty ?? item.quantity ?? 1;
+        if (available < itemQty) {
           throw new BadRequestException(
-            `Insufficient stock for "${product.name}". Requested: ${item.qty}, Available: ${available} ${product.unit}`,
+            `Insufficient stock for "${product.name}". Requested: ${itemQty}, Available: ${available} ${product.unit}`,
           );
         }
       }
@@ -70,13 +71,14 @@ export class SalesService {
 
       for (const item of dto.items) {
         const product = productMap.get(item.productId)!;
-        const lineTotal = item.qty * item.unitPrice;
+        const itemQty = item.qty ?? item.quantity ?? 1;
+        const lineTotal = itemQty * item.unitPrice;
         subtotal += lineTotal;
 
         saleItemsData.push({
           productId: product.id,
           nameSnapshot: product.name,
-          qty: new Prisma.Decimal(item.qty),
+          qty: new Prisma.Decimal(itemQty),
           unitPrice: new Prisma.Decimal(item.unitPrice),
           unitCost: product.costPrice, // Historical cost snapshot
           lineTotal: new Prisma.Decimal(lineTotal),
@@ -85,6 +87,7 @@ export class SalesService {
 
       const discount = dto.discount ? Number(dto.discount) : 0;
       const total = Math.max(0, subtotal - discount);
+      const note = dto.note || dto.notes || null;
 
       // 5. Create Sale
       const sale = await tx.sale.create({
@@ -96,7 +99,7 @@ export class SalesService {
           subtotal: new Prisma.Decimal(subtotal),
           discount: new Prisma.Decimal(discount),
           total: new Prisma.Decimal(total),
-          note: dto.note || null,
+          note,
           createdById: userId,
           idempotencyKey: dto.idempotencyKey || null,
           items: {
@@ -112,7 +115,8 @@ export class SalesService {
       // 6. Deduct stock and record StockMovement for each product
       for (const item of dto.items) {
         const product = productMap.get(item.productId)!;
-        const newBalance = Number(product.stockQty) - item.qty;
+        const itemQty = item.qty ?? item.quantity ?? 1;
+        const newBalance = Number(product.stockQty) - itemQty;
 
         await tx.product.update({
           where: { id: product.id },
@@ -126,7 +130,7 @@ export class SalesService {
             businessId,
             productId: product.id,
             type: MovementType.SALE,
-            quantityChange: new Prisma.Decimal(-item.qty),
+            quantityChange: new Prisma.Decimal(-itemQty),
             balanceAfter: new Prisma.Decimal(newBalance),
             unitCost: product.costPrice,
             refType: 'Sale',
@@ -138,7 +142,11 @@ export class SalesService {
       }
 
       // 7. Record payment receipt
-      const paidAmount = dto.paidAmount !== undefined ? Number(dto.paidAmount) : total;
+      const paidAmount = dto.paidAmount !== undefined 
+        ? Number(dto.paidAmount) 
+        : dto.amountPaid !== undefined 
+        ? Number(dto.amountPaid) 
+        : total;
       if (paidAmount > 0) {
         await tx.payment.create({
           data: {

@@ -50,28 +50,36 @@ export const AiAdvisorPage: React.FC = () => {
   const [language, setLanguage] = useState<'en' | 'bn'>('en');
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const { data, isLoading, isFetching, refetch } = useQuery<RecommendationsResponse>({
+  const { data: rawRecs, isLoading, isFetching, refetch } = useQuery<any>({
     queryKey: ['ai-recommendations', language],
-    queryFn: () => apiRequest<RecommendationsResponse>(`/ai-advisor/recommendations?language=${language}`),
+    queryFn: () => apiRequest<any>(`/ai-advisor/recommendations?language=${language}`),
+  });
+
+  const { data: insightsData } = useQuery<any>({
+    queryKey: ['ai-insights'],
+    queryFn: () => apiRequest<any>('/ai-advisor/insights'),
   });
 
   // 1-Click PO Mutation
   const createPoMutation = useMutation({
-    mutationFn: (item: RecommendationItem) =>
-      apiRequest('/purchases', {
+    mutationFn: (item: RecommendationItem) => {
+      const orderQty = item.recommendedOrderQty > 0 ? item.recommendedOrderQty : (item.reorderLevel || 10);
+      return apiRequest('/purchases', {
         method: 'POST',
         body: JSON.stringify({
           supplierId: item.suggestedSupplier?.id,
-          expectedDate: new Date(Date.now() + item.leadTimeDays * 86400000).toISOString().split('T')[0],
+          expectedDate: new Date(Date.now() + (item.leadTimeDays || 3) * 86400000).toISOString().split('T')[0],
           items: [
             {
               productId: item.productId,
-              quantity: item.recommendedOrderQty,
+              qty: orderQty,
+              quantity: orderQty,
               unitCost: item.unitCost,
             },
           ],
         }),
-      }),
+      });
+    },
     onSuccess: () => {
       setSuccessMsg('Purchase order drafted successfully! Redirecting to Purchases...');
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
@@ -81,8 +89,40 @@ export const AiAdvisorPage: React.FC = () => {
     },
   });
 
-  const recommendations = data?.recommendations || [];
-  const health = data?.healthSummary;
+  const rawList: any[] = Array.isArray(rawRecs)
+    ? rawRecs
+    : rawRecs?.recommendations || [];
+
+  const recommendations: RecommendationItem[] = rawList.map((item: any) => {
+    const isCrit = item.urgency === 'CRITICAL' || item.priority === 'CRITICAL';
+    const isWarn = item.urgency === 'WARNING' || item.priority === 'HIGH';
+    return {
+      productId: item.productId,
+      productName: item.name || item.productName || 'Product',
+      sku: item.sku || 'SKU',
+      unit: item.unit || 'pcs',
+      currentStock: Number(item.currentStock ?? 0),
+      reorderLevel: Number(item.reorderPoint ?? item.reorderLevel ?? 0),
+      leadTimeDays: Number(item.leadTimeDays ?? 3),
+      dailyVelocity: Number(item.dailyVelocity ?? 0),
+      leadTimeDemand: Number(item.leadTimeDemand ?? 0),
+      safetyStock: Number(item.safetyStock ?? 0),
+      reorderPoint: Number(item.reorderPoint ?? 0),
+      recommendedOrderQty: Number(item.recommendedOrderQty ?? 0),
+      unitCost: Number(item.costPrice ?? item.unitCost ?? 0),
+      estimatedCost: Number(item.estimatedReorderCost ?? item.estimatedCost ?? 0),
+      priority: (isCrit ? 'CRITICAL' : isWarn ? 'HIGH' : item.priority || 'LOW') as 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW',
+      explanation: item.explanation || (language === 'bn' ? 'মজুদ পর্যাপ্ত রয়েছে।' : 'Inventory level is healthy.'),
+      suggestedSupplier: item.suggestedSupplier,
+    };
+  });
+
+  const health = {
+    totalSkus: insightsData?.totalProductsAnalyzed ?? recommendations.length,
+    lowStockCount: insightsData?.warningsCount ?? recommendations.filter((r) => r.priority === 'HIGH').length,
+    outOfStockCount: insightsData?.criticalStockouts ?? recommendations.filter((r) => r.priority === 'CRITICAL').length,
+    estimatedRestockCost: insightsData?.totalRecommendedInvestment ?? recommendations.reduce((acc, r) => acc + r.estimatedCost, 0),
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

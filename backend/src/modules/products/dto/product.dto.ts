@@ -25,6 +25,16 @@ export class CreateProductDto {
   @IsOptional()
   categoryId?: string;
 
+  @ApiProperty({ example: '8901030000000', required: false })
+  @IsString()
+  @IsOptional()
+  barcode?: string;
+
+  @ApiProperty({ example: 'Aisle 3, Shelf B', required: false })
+  @IsString()
+  @IsOptional()
+  location?: string;
+
   @ApiProperty({ example: 'pcs', default: 'pcs' })
   @IsString()
   @IsOptional()
@@ -73,6 +83,14 @@ export class UpdateProductDto {
   @IsString()
   @IsOptional()
   categoryId?: string;
+
+  @IsString()
+  @IsOptional()
+  barcode?: string;
+
+  @IsString()
+  @IsOptional()
+  location?: string;
 
   @IsString()
   @IsOptional()

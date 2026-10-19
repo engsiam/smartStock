@@ -17,17 +17,32 @@ export class CreateSaleItemDto {
   @IsNotEmpty()
   productId!: string;
 
-  @ApiProperty({ example: 2 })
+  @ApiProperty({ example: 2, required: false })
   @Type(() => Number)
   @IsNumber()
   @Min(0.001)
-  qty!: number;
+  @IsOptional()
+  qty?: number;
+
+  @ApiProperty({ example: 2, required: false })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0.001)
+  @IsOptional()
+  quantity?: number;
 
   @ApiProperty({ example: 240.0 })
   @Type(() => Number)
   @IsNumber()
   @Min(0)
   unitPrice!: number;
+
+  @ApiProperty({ example: 0, required: false })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  discount?: number = 0;
 }
 
 export class CreateSaleDto {
@@ -62,10 +77,22 @@ export class CreateSaleDto {
   @IsOptional()
   paidAmount?: number;
 
+  @ApiProperty({ example: 480.0, required: false })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  amountPaid?: number;
+
   @ApiProperty({ example: 'POS counter sale', required: false })
   @IsString()
   @IsOptional()
   note?: string;
+
+  @ApiProperty({ example: 'POS counter sale', required: false })
+  @IsString()
+  @IsOptional()
+  notes?: string;
 
   @ApiProperty({ example: 'pos-txn-uuid', required: false })
   @IsString()

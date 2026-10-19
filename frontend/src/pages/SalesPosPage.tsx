@@ -41,20 +41,26 @@ interface CartItem {
 
 interface SaleRecord {
   id: string;
-  invoiceNumber: string;
+  invoiceNumber?: string;
+  number?: string;
   status: 'COMPLETED' | 'VOIDED';
-  totalAmount: number;
-  discountAmount: number;
-  finalAmount: number;
-  paymentMethod: string;
+  totalAmount?: number;
+  total?: number;
+  discountAmount?: number;
+  discount?: number;
+  finalAmount?: number;
+  paymentMethod?: string;
   createdAt: string;
   customer?: { name: string; phone?: string };
   items?: Array<{
     id: string;
-    product: { name: string; sku: string };
-    quantity: number;
+    product?: { name: string; sku: string };
+    nameSnapshot?: string;
+    quantity?: number;
+    qty?: number;
     unitPrice: number;
-    totalPrice: number;
+    totalPrice?: number;
+    lineTotal?: number;
   }>;
 }
 
@@ -182,10 +188,13 @@ export const SalesPosPage: React.FC = () => {
       customerId: selectedCustomerId || undefined,
       paymentMethod,
       discount: discountVal,
+      paidAmount: paidVal,
       amountPaid: paidVal,
+      note: notes || undefined,
       notes: notes || undefined,
       items: cart.map((i) => ({
         productId: i.product.id,
+        qty: i.quantity,
         quantity: i.quantity,
         unitPrice: i.unitPrice,
         discount: i.discount,
@@ -448,6 +457,12 @@ export const SalesPosPage: React.FC = () => {
                 )}
               </div>
 
+              {checkoutMutation.isError && (
+                <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-400">
+                  {(checkoutMutation.error as any)?.message || 'Checkout failed. Please check inputs.'}
+                </div>
+              )}
+
               {/* Checkout Button */}
               <button
                 onClick={handleCheckout}
@@ -500,7 +515,7 @@ export const SalesPosPage: React.FC = () => {
                   salesList.map((sale) => (
                     <tr key={sale.id} className="hover:bg-slate-900/50 transition-colors">
                       <td className="py-3 px-4 font-mono font-bold text-white">
-                        {sale.invoiceNumber}
+                        {sale.invoiceNumber || sale.number}
                       </td>
                       <td className="py-3 px-4 text-slate-400">{formatDate(sale.createdAt)}</td>
                       <td className="py-3 px-4 text-slate-300">
@@ -508,11 +523,11 @@ export const SalesPosPage: React.FC = () => {
                       </td>
                       <td className="py-3 px-4 text-slate-300">
                         <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono">
-                          {sale.paymentMethod}
+                          {sale.paymentMethod || 'CASH'}
                         </span>
                       </td>
                       <td className="py-3 px-4 font-bold text-emerald-400">
-                        {formatBDT(sale.finalAmount)}
+                        {formatBDT(sale.finalAmount ?? sale.total)}
                       </td>
                       <td className="py-3 px-4">
                         {sale.status === 'COMPLETED' ? (
@@ -566,7 +581,7 @@ export const SalesPosPage: React.FC = () => {
               <p className="text-[10px] text-slate-500">Dhaka, Bangladesh • Ph: +880 1711-000000</p>
               <p className="text-[10px] text-slate-500">VAT Reg: 001928374-0101</p>
               <div className="mt-2 text-[11px] font-bold">
-                INVOICE: {completedSale.invoiceNumber}
+                INVOICE: {completedSale.invoiceNumber || completedSale.number}
               </div>
               <div className="text-[10px] text-slate-500">
                 {formatDate(completedSale.createdAt)}
@@ -587,19 +602,19 @@ export const SalesPosPage: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span>Payment:</span>
-                <span className="font-bold">{completedSale.paymentMethod}</span>
+                <span className="font-bold">{completedSale.paymentMethod || 'CASH'}</span>
               </div>
             </div>
 
             {/* Line items */}
             {completedSale.items && completedSale.items.length > 0 && (
               <div className="space-y-1.5 border-b border-dashed border-slate-300 pb-3">
-                {completedSale.items.map((it) => (
+                {completedSale.items.map((it: any) => (
                   <div key={it.id} className="flex justify-between">
                     <span className="truncate pr-2">
-                      {it.product?.name} ({it.quantity}x)
+                      {it.product?.name || it.nameSnapshot} ({it.quantity || it.qty}x)
                     </span>
-                    <span className="font-bold shrink-0">{formatBDT(it.totalPrice)}</span>
+                    <span className="font-bold shrink-0">{formatBDT(it.totalPrice ?? it.lineTotal ?? ((it.quantity || it.qty) * it.unitPrice))}</span>
                   </div>
                 ))}
               </div>
@@ -609,17 +624,17 @@ export const SalesPosPage: React.FC = () => {
             <div className="space-y-1 pt-1 border-b border-dashed border-slate-300 pb-3">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
-                <span>{formatBDT(completedSale.totalAmount)}</span>
+                <span>{formatBDT(completedSale.totalAmount ?? completedSale.total ?? completedSale.finalAmount)}</span>
               </div>
-              {completedSale.discountAmount > 0 && (
+              {((completedSale.discountAmount ?? completedSale.discount ?? 0) > 0) && (
                 <div className="flex justify-between text-slate-600">
                   <span>Discount:</span>
-                  <span>-{formatBDT(completedSale.discountAmount)}</span>
+                  <span>-{formatBDT(completedSale.discountAmount ?? completedSale.discount)}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-sm pt-1">
                 <span>TOTAL (BDT):</span>
-                <span>{formatBDT(completedSale.finalAmount)}</span>
+                <span>{formatBDT(completedSale.finalAmount ?? completedSale.total)}</span>
               </div>
             </div>
 
