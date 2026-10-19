@@ -10,7 +10,7 @@
 [![Google Gemini](https://img.shields.io/badge/Gemini_2.5_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
 > **Practical Assessment Submission:** NT TECH INNOVATION — Full Stack Developer  
-> **Candidate:** Siam Ahmed  
+> **Candidate:** Shohrab Hossain
 > **Target Audience:** Retail & Wholesale SMEs in Bangladesh (Grocery, Supermarkets, FMCG Distributors)  
 > **Currency:** Bangladeshi Taka (BDT ৳) with poysha precision  
 > **Evaluation Date:** 19 October 2026  
